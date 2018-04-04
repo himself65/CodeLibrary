@@ -1,0 +1,127 @@
+<html>
+
+<head>
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <ul id="results">
+  </ul>
+</body>
+
+<script>
+  function* getName(action) {
+    yield "Himself65" + action;
+    return "Himself66" + action;
+  }
+
+  // 第一个例子
+  function Test1() {
+    const iterator = getName("Yang");
+    const result1 = iterator.next();
+    const result2 = iterator.next();
+    assert(true, result1.value)
+    assert(true, result2.value)
+  }
+
+  // 第二个例子
+  function Test2() {
+    var promise1 = new Promise((resolve, reject) => {
+      report("Promise1 Start")
+      setTimeout(() => {
+        report("Resolving promise1")
+        resolve("Promise resolve 1")
+      }, 500)
+    })
+
+    assert(promise1 !== null, '已经创建promise1')
+
+    promise1.then(something => {
+      assert(something === "Promise resolve 1", "Get Promise resolve 1")
+    })
+
+    const promise2 = new Promise((resolve, reject) => {
+      report("Promise2 Start")
+      resolve("Promise resolve 2")
+    })
+
+    promise2.then(something => {
+      assert(something === "Promise resolve 2", "Get Promise resolve 2");
+    })
+
+    report("END CODE")
+  }
+
+  function Test3() {
+    async (function* () {
+      const name1 = yield getTask('Himself65');
+      const name2 = yield getTask('Himself66');
+      const name3 = yield getTask('Himself67');
+    });
+
+    function async (generator) {
+      var iterator = generator();
+
+      // function to do the Task
+      function handle(iteratorResult) {
+        if (iteratorResult.done) {
+          return;
+        }
+        const iteratorValue = iteratorResult.value;
+        if (iteratorValue instanceof Promise) {
+          iteratorValue.then(handle(iterator.next()))
+            .catch(err => iterator.throw(err));
+        }
+      }
+
+      handle(iterator.next());
+    }
+  }
+
+  function getTask(name) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(name + " finished!");
+        assert(true, 'Finished ' + name);
+      }, 500)();
+    });
+  }
+
+  window.onload = function () {
+    report("Code Start");
+    // Test1();
+    // Test2();
+    Test3(); // 这里简单的封装了一下
+    report("Code End");
+  }
+
+  function assert(value, desc) {
+    var li = document.createElement("li");
+    li.className = value ? "pass" : "fail";
+    li.appendChild(document.createTextNode(desc));
+    document.getElementById("results").appendChild(li);
+  }
+
+  function report(desc) {
+    var li = document.createElement("li");
+    li.className = "report";
+    li.appendChild(document.createTextNode(desc))
+    document.getElementById("results").appendChild(li);
+  }
+</script>
+
+<style>
+  #results li.pass {
+    color: green
+  }
+
+  #results li.fail {
+    color: red
+  }
+
+  #results li.report {
+    color: blue
+  }
+</style>
+
+</html>
